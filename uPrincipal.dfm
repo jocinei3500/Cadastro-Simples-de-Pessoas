@@ -265,8 +265,11 @@ object frmPrincipal: TfrmPrincipal
     Top = 385
     Width = 615
     Height = 128
+    Hint = 'Para Manipular o Registro: D'#234' dois cliques na linha desejada.'
     DataSource = dmData.dstPessoas
     Options = [dgTitles, dgIndicator, dgColumnResize, dgColLines, dgRowLines, dgTabs, dgRowSelect, dgConfirmDelete, dgCancelOnExit, dgTitleClick, dgTitleHotTrack]
+    ParentShowHint = False
+    ShowHint = True
     TabOrder = 8
     TitleFont.Charset = DEFAULT_CHARSET
     TitleFont.Color = clWindowText
@@ -290,10 +293,11 @@ object frmPrincipal: TfrmPrincipal
     OnExit = edCEPExit
   end
   object mCEP: TMemo
-    Left = 123
-    Top = 241
+    Left = 124
+    Top = 240
     Width = 510
     Height = 72
+    Hint = 'Para Editar ou Excluir o Registro: de dois cliques.'
     TabStop = False
     DragMode = dmAutomatic
     Font.Charset = DEFAULT_CHARSET

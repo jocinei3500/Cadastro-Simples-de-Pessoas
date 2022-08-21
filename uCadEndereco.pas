@@ -39,6 +39,7 @@ type
     procedure excluir();
     function verificaCampos: boolean;
     procedure visualizaDados();
+    function verificaCEP: boolean;
   public
     { Public declarations }
   end;
@@ -48,7 +49,7 @@ var
 
 implementation
 
-uses uData;
+uses uData, ViaCEP.Core, ViaCEP.Intf, ViaCEP.Model;
 
 {$R *.dfm}
 
@@ -84,6 +85,10 @@ begin
   num := edNum.Text;
   cidade := edCidade.Text;
   estado := edEstado.Text;
+
+  if verificaCEP=false then
+    exit;
+
   if btCadEdit.Caption = 'Cadastrar' then
   begin
     SQL := 'INSERT INTO ENDERECOS(CEP, ENDERECO, NUM, CIDADE,ESTADO)' +
@@ -120,14 +125,14 @@ begin
 end;
 
 procedure TfrmCadEndereco.excluir;
-  var
-    sql, cep:string;
+var
+  SQL, cep: string;
 begin
-  cep:=edCep.Text;
-  sql:='DELETE FROM ENDERECOS WHERE CEP='+ quotedStr(cep);
-  dmData.qPessoas.SQL.Clear;
-  dmData.qPessoas.SQL.Add(sql);
-  dmData.qPessoas.ExecSQL;
+  cep := edCEP.Text;
+  SQL := 'DELETE FROM ENDERECOS WHERE CEP=' + quotedStr(cep);
+  dmdata.qPessoas.SQL.Clear;
+  dmdata.qPessoas.SQL.Add(SQL);
+  dmdata.qPessoas.ExecSQL;
   limpaCampos;
   carregaEnderecos;
 
@@ -147,6 +152,7 @@ begin
   edEstado.Clear;
   btCadEdit.Caption := 'Cadastrar';
   btExcluir.Enabled := false;
+  edCEP.SetFocus;
 
 end;
 
@@ -189,6 +195,36 @@ begin
   end;
 
   result := true;
+end;
+
+function TfrmCadEndereco.verificaCEP: boolean;
+var
+  ViaCEP: IViaCEP;
+  cep: TViaCEPClass;
+begin
+  result:=false;
+  ViaCEP := TViaCEP.Create;
+  if (not(ViaCEP.Validate(edCEP.Text))) then
+  begin
+    Showmessage('CEP inválido!');
+    result:=false;
+    exit;
+  end;
+
+  cep := ViaCEP.Get(edCEP.Text);
+  if not Assigned(cep) then
+    begin
+      result:=false;
+      exit;
+    end;
+
+  if cep.Localidade = '' then
+  begin
+    Showmessage('CEP Não encontrado');
+    result:=false;
+    exit;
+  end;
+  result:=true;
 end;
 
 procedure TfrmCadEndereco.visualizaDados;

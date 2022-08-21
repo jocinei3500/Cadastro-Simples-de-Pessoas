@@ -55,9 +55,10 @@ type
     procedure visualizaDados();
     procedure limpaCampos();
     procedure Excluir();
-    function verificaCampos:boolean;
+    function verificaCampos: boolean;
   public
     { Public declarations }
+    function verificaCEP(_Cep: string): boolean;
   end;
 
 var
@@ -76,7 +77,7 @@ end;
 
 procedure TfrmPrincipal.btExcluirClick(Sender: TObject);
 begin
-  excluir;
+  Excluir;
 end;
 
 procedure TfrmPrincipal.btNovoClick(Sender: TObject);
@@ -84,7 +85,7 @@ begin
   limpaCampos;
 end;
 
-procedure TfrmPrincipal.buscaCEP;
+procedure TfrmPrincipal.buscaCEP();
 var
   ViaCEP: IViaCEP;
   CEP: TViaCEPClass;
@@ -93,13 +94,17 @@ begin
   if (not(ViaCEP.Validate(edCEP.Text))) then
   begin
     showmessage('CEP inválido!');
-    edCEP.SetFocus;
     exit;
   end;
 
   CEP := ViaCEP.Get(edCEP.Text);
   if not Assigned(CEP) then
     exit;
+  if CEP.Localidade = '' then
+  begin
+    showmessage('CEP Não encontrado');
+    exit;
+  end;
   try
     mCEP.Lines.Add(CEP.Logradouro + ' - ' + CEP.Bairro);
     mCEP.Lines.Add(CEP.Localidade + ' - ' + CEP.UF);
@@ -119,11 +124,11 @@ end;
 
 procedure TfrmPrincipal.cadEdit;
 var
-  id,nome, cpf, rg, nomeMae, nomePai, CEP, sql: string;
+  id, nome, cpf, rg, nomeMae, nomePai, CEP, sql: string;
 begin
   if verificaCampos = false then
     exit;
-  id:=edID.Text;
+  id := edID.Text;
   nome := edNome.Text;
   cpf := edCPF.Text;
   rg := edRG.Text;
@@ -138,12 +143,12 @@ begin
       + quotedStr(CEP) + ')';
   end
   else
-    begin
-    sql := 'UPDATE PESSOAS SET NOME ='+ quotedStr(nome) + ', CPF=' + quotedStr(cpf) +
-     ',RG=' + quotedStr(rg) + ',NOME_MAE=' + quotedStr(nomeMae) + ',NOME_PAI=' +
-     quotedStr(nomePai) + ',CEP=' + quotedStr(CEP) +   ' WHERE ID ='+ id;
-    end;
-
+  begin
+    sql := 'UPDATE PESSOAS SET NOME =' + quotedStr(nome) + ', CPF=' +
+      quotedStr(cpf) + ',RG=' + quotedStr(rg) + ',NOME_MAE=' +
+      quotedStr(nomeMae) + ',NOME_PAI=' + quotedStr(nomePai) + ',CEP=' +
+      quotedStr(CEP) + ' WHERE ID =' + id;
+  end;
 
   dmdata.qPessoas.sql.Clear;
   dmdata.qPessoas.sql.Add(sql);
@@ -177,14 +182,14 @@ begin
 end;
 
 procedure TfrmPrincipal.Excluir;
-  var
-    sql, id:string;
+var
+  sql, id: string;
 begin
-  id:=edID.Text;
-  sql:='DELETE FROM PESSOAS WHERE ID='+ id;
-  dmData.qPessoas.SQL.Clear;
-  dmData.qPessoas.SQL.Add(sql);
-  dmData.qPessoas.ExecSQL;
+  id := edID.Text;
+  sql := 'DELETE FROM PESSOAS WHERE ID=' + id;
+  dmdata.qPessoas.sql.Clear;
+  dmdata.qPessoas.sql.Add(sql);
+  dmdata.qPessoas.ExecSQL;
   limpaCampos;
   carregaPessoas;
 end;
@@ -206,6 +211,7 @@ begin
   mCEP.Clear;
   btCadEdit.Caption := 'Cadastrar';
   btExcluir.Enabled := false;
+  edNome.SetFocus;
 end;
 
 function TfrmPrincipal.verificaCampos: boolean;
@@ -214,47 +220,79 @@ begin
   result := false;
   if edNome.Text = '' then
   begin
-    Showmessage('Informe o Nome!');
+    showmessage('Informe o Nome!');
     edNome.SetFocus;
     exit;
   end;
 
   if edCPF.Text = '' then
   begin
-    Showmessage('Informe o CPF!');
+    showmessage('Informe o CPF!');
     edCPF.SetFocus;
     exit;
   end;
 
   if edRG.Text = '' then
   begin
-    Showmessage('Informe o RG!');
+    showmessage('Informe o RG!');
     edRG.SetFocus;
     exit;
   end;
 
   if edNomeMae.Text = '' then
   begin
-    Showmessage('Informe o nome da mãe');
+    showmessage('Informe o nome da mãe');
     edNomeMae.SetFocus;
     exit;
   end;
 
   if edNomePai.Text = '' then
   begin
-    Showmessage('Informe o nome do pai!');
+    showmessage('Informe o nome do pai!');
     edNomePai.SetFocus;
     exit;
   end;
 
   if edCEP.Text = '' then
   begin
-    Showmessage('Informe o CEP');
+    showmessage('Informe o CEP');
     edCEP.SetFocus;
     exit;
   end;
 
   result := true;
+end;
+
+function TfrmPrincipal.verificaCEP(_Cep: string): boolean;
+var
+  ViaCEP: IViaCEP;
+  CEP: TViaCEPClass;
+begin
+  result := true;
+  ViaCEP := TViaCEP.Create;
+  if (not(ViaCEP.Validate(_Cep))) then
+  begin
+    showmessage('CEP inválido!');
+    result := false;
+    exit;
+  end;
+
+  CEP := ViaCEP.Get(_Cep);
+  if not Assigned(CEP) then
+  begin
+    result := false;
+    exit;
+  end;
+
+  if CEP.Localidade = '' then
+  begin
+    showmessage('CEP Não encontrado');
+    result:=false;
+    exit;
+  end;
+
+  result:=true;
+
 end;
 
 procedure TfrmPrincipal.visualizaDados;
